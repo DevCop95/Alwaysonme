@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <title>Reloj Digital Cartagena</title>
+
+  <style>
+    @font-face {
+      font-family: 'DSEG7';
+      src: url('https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2') format('woff2');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'DSEG14';
+      src: url('https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG14-Classic/DSEG14Classic-Bold.woff2') format('woff2');
+      font-weight: 700;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #000000;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    #clock-container {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    /* Wrapper para superponer ghost + activo */
+    .digit-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    /* Capa 1: todos los segmentos apagados (muy tenue) */
+    .ghost {
+      font-family: 'DSEG7', monospace;
+      font-size: clamp(5rem, 25vw, 16rem);
+      font-weight: 700;
+      line-height: 1;
+      color: rgba(255, 255, 255, 0.07);
+      letter-spacing: 6px;
+      display: block;
+    }
+
+    /* Capa 2: segmentos activos encima */
+    .active {
+      font-family: 'DSEG7', monospace;
+      font-size: clamp(5rem, 25vw, 16rem);
+      font-weight: 700;
+      line-height: 1;
+      color: rgba(255, 255, 255, 0.75);
+      letter-spacing: 6px;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    #ampm {
+      font-family: 'DSEG14', monospace;
+      font-size: clamp(1.2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.5);
+      align-self: flex-start;
+      margin-top: clamp(1rem, 4vw, 2.5rem);
+      margin-left: 10px;
+    }
+
+    #weather {
+      margin-top: 1.5rem;
+      font-family: 'DSEG14', monospace;
+      font-size: clamp(0.85rem, 3vw, 1.6rem);
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 3px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    #fs-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.25);
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.3s;
+      z-index: 10;
+    }
+    #fs-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+    #fs-btn.hidden { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <div>
+    <div id="clock-container">
+      <div class="digit-wrap">
+        <!-- 88:88 muestra TODOS los segmentos posibles como fantasma -->
+        <span class="ghost">88:88</span>
+        <span class="active" id="clock">--:--</span>
+      </div>
+      <span id="ampm">--</span>
+    </div>
+    <div id="weather">--C  •  ------</div>
+  </div>
+
+  <button id="fs-btn">⛶ Pantalla Completa</button>
+
+  <script>
+    const LAT = 10.3910;
+    const LON = -75.4794;
+
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      document.getElementById('clock').textContent = hours.toString().padStart(2, '0') + ':' + minutes;
+      document.getElementById('ampm').textContent = ampm;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    async function fetchWeather() {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true`);
+        const data = await res.json();
+        const temp = Math.round(data.current_weather.temperature);
+        const weatherMap = {
+          0: "CLEAR", 1: "MOSTLY CLEAR", 2: "PARTLY CLOUDY", 3: "CLOUDY",
+          45: "FOG", 48: "FOG", 51: "DRIZZLE", 53: "DRIZZLE", 55: "DRIZZLE",
+          61: "RAIN", 63: "RAIN", 65: "HEAVY RAIN",
+          80: "SHOWERS", 81: "SHOWERS", 82: "SHOWERS",
+          95: "STORM", 96: "STORM", 99: "STORM"
+        };
+        const desc = weatherMap[data.current_weather.weathercode] || "VARIABLE";
+        document.getElementById('weather').textContent = temp + 'C  •  ' + desc;
+      } catch (e) {
+        document.getElementById('weather').textContent = "--C";
+      }
+    }
+
+    fetchWeather();
+    setInterval(fetchWeather, 15 * 60 * 1000);
+
+    const btn = document.getElementById('fs-btn');
+    btn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      btn.classList.toggle('hidden', !!document.fullscreenElement);
+    });
+
+    async function lockScreen() {
+      try {
+        if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
+      } catch (err) {}
+    }
+    lockScreen();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') lockScreen();
+    });
+  </script>
+</body>
+</html>
