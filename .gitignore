@@ -1,0 +1,11 @@
+# Temporary scratch and downloaded raw media
+scratch/
+sprites_downloaded/
+audio_raw/
+audio_clips_latino/
+audio_clips_latino_full/
+audio_clips_finn_latino/
+audio_clips_finn_uncut/
+audio_clips_jake_pure_latino/
+.DS_Store
+Thumbs.db
