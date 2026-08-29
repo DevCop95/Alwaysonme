@@ -746,32 +746,68 @@
     /* ==========================================================
        10. SÍNTESIS DE VOZ DE PERSONAJES (WEB SPEECH API)
        ========================================================== */
+    let availableVoices = [];
+    function loadVoices() {
+      if ('speechSynthesis' in window) {
+        availableVoices = window.speechSynthesis.getVoices() || [];
+      }
+    }
+    if ('speechSynthesis' in window) {
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function getBestVoiceForChar(char) {
+      if (!availableVoices.length) loadVoices();
+      const spanishVoices = availableVoices.filter(v => v.lang && (v.lang.toLowerCase().includes('es')));
+      if (!spanishVoices.length) return availableVoices[0] || null;
+
+      // Priorizar español latino (México, Colombia, etc. como el doblaje original de Ooo)
+      const latamVoices = spanishVoices.filter(v => 
+        v.lang.includes('MX') || v.lang.includes('419') || v.lang.includes('US') || v.lang.includes('CO') || v.name.toLowerCase().includes('mexico')
+      );
+      const pool = latamVoices.length ? latamVoices : spanishVoices;
+
+      if (char === 'finn') {
+        const finnVoice = pool.find(v => /jorge|miguel|david|raul|enrique|male/i.test(v.name));
+        return finnVoice || pool[0];
+      } else if (char === 'jake') {
+        const jakeVoice = pool.find(v => /pablo|diego|carlos|alvaro|male/i.test(v.name));
+        return jakeVoice || pool[pool.length - 1] || pool[0];
+      } else if (char === 'bmo') {
+        const bmoVoice = pool.find(v => /sabina|mia|paulina|helena|laura|monica|female/i.test(v.name));
+        return bmoVoice || pool[0];
+      }
+      return pool[0];
+    }
+
     function speakCharacterPhrase(char, phrase) {
       if (!('speechSynthesis' in window)) return;
       try {
         window.speechSynthesis.cancel();
-        // Quitar emojis para pronunciación limpia
+        // Quitar emojis para que el sintetizador hable fluido
         const cleanText = phrase.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}]/gu, '').trim();
         
         const utter = new SpeechSynthesisUtterance(cleanText);
-        utter.lang = 'es-ES';
+        utter.lang = 'es-MX'; // Español latino de Hora de Aventura
 
-        const voices = window.speechSynthesis.getVoices();
-        const spanishVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('es'));
-        if (spanishVoice) utter.voice = spanishVoice;
+        const selectedVoice = getBestVoiceForChar(char);
+        if (selectedVoice) {
+          utter.voice = selectedVoice;
+        }
 
         if (char === 'finn') {
           // Finn: Tono enérgico, juvenil y heroico
-          utter.pitch = 1.35;
-          utter.rate = 1.12;
+          utter.pitch = 1.38;
+          utter.rate = 1.15;
         } else if (char === 'jake') {
           // Jake: Tono relajado, amigable y más grave
-          utter.pitch = 0.82;
-          utter.rate = 0.94;
+          utter.pitch = 0.78;
+          utter.rate = 0.92;
         } else if (char === 'bmo') {
           // BMO: Tono robótico, muy agudo y alegre
-          utter.pitch = 1.90;
-          utter.rate = 1.05;
+          utter.pitch = 1.95;
+          utter.rate = 1.08;
         }
 
         window.speechSynthesis.speak(utter);
