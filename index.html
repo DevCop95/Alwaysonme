@@ -4,145 +4,499 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#000000">
-  <title>Reloj Digital Cartagena</title>
+  <meta name="theme-color" content="#030508">
+  <title>Hora de Aventura · Smart Ambient Display 🎂</title>
+
+  <!-- Fuentes Premium de Alta Legibilidad -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     @font-face {
       font-family: 'DSEG7';
       src: url('https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2') format('woff2');
       font-weight: 700;
-    }
-    @font-face {
-      font-family: 'DSEG14';
-      src: url('https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG14-Classic/DSEG14Classic-Bold.woff2') format('woff2');
-      font-weight: 700;
+      font-display: swap;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #111726 0%, #060911 65%, #020306 100%);
+      --accent-gold: #fbbf24;
+      --accent-blue: #38bdf8;
+      --accent-pink: #f472b6;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-glow: 0 0 25px rgba(255, 255, 255, 0.3), 0 0 50px rgba(56, 189, 248, 0.2);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     html, body {
-      width: 100%; height: 100%;
-      background: #000000;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-gradient);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
+      color: #ffffff;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      position: relative;
+      touch-action: manipulation;
+      transition: filter 0.4s ease, background 0.4s ease;
+    }
+
+    /* Modo Noche / Atenuado (Night Dimming para Tablet 24/7) */
+    body.night-mode {
+      filter: brightness(0.6) contrast(1.05);
+      background: #010204;
+    }
+
+    /* Canvas de confeti en fondo (GPU optimizado) */
+    #confetti-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      will-change: transform;
+    }
+
+    /* Header Superior y Barra de Estado */
+    .header-banner {
+      z-index: 10;
+      margin-top: clamp(0.6rem, 2vh, 1.6rem);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 0 1rem;
+      transition: opacity 0.3s ease;
+    }
+
+    .adventure-title {
+      font-family: 'Fredoka', 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.6rem, 4vw, 2.6rem);
+      color: #fbbf24;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 2.5px 2.5px 0px #92400e;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .adventure-title:hover {
+      transform: scale(1.03);
+    }
+
+    .birthday-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(244, 114, 182, 0.12) 100%);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 6px 18px;
+      border-radius: 50px;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(0.8rem, 1.6vw, 1rem);
+      font-weight: 700;
+      color: #fde047;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(251, 191, 36, 0.15);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .birthday-badge:hover {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(244, 114, 182, 0.2) 100%);
+      border-color: #fbbf24;
+      transform: translateY(-1.5px) scale(1.02);
+      box-shadow: 0 6px 20px rgba(251, 191, 36, 0.35);
+    }
+    .birthday-badge.party-pulse {
+      animation: bdayGlow 1.2s ease-in-out;
+    }
+    @keyframes bdayGlow {
+      0% { transform: scale(1); box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
+      50% { transform: scale(1.08); background: rgba(251, 191, 36, 0.4); border-color: #fbbf24; box-shadow: 0 0 35px rgba(251, 191, 36, 0.8), 0 0 60px rgba(250, 204, 21, 0.5); }
+      100% { transform: scale(1); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4); }
+    }
+
+    /* Escenario Central del Reloj (Anti Burn-In Shift) */
+    .center-stage {
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: auto 0;
+      padding: 0 1rem;
+      max-height: 52vh;
+      transition: transform 0.5s ease;
     }
 
     #clock-container {
       position: relative;
-      z-index: 2;
-      text-align: center;
       display: flex;
       align-items: flex-start;
       justify-content: center;
     }
 
-    /* Wrapper para superponer ghost + activo */
     .digit-wrap {
       position: relative;
       display: inline-block;
     }
 
-    /* Capa 1: todos los segmentos apagados (muy tenue) */
     .ghost {
       font-family: 'DSEG7', monospace;
-      font-size: clamp(5rem, 25vw, 16rem);
+      font-size: clamp(3.8rem, 17vw, 10.5rem);
       font-weight: 700;
       line-height: 1;
-      color: rgba(255, 255, 255, 0.07);
-      letter-spacing: 6px;
+      color: rgba(255, 255, 255, 0.03);
+      letter-spacing: clamp(4px, 1.4vw, 10px);
       display: block;
     }
 
-    /* Capa 2: segmentos activos encima */
     .active {
       font-family: 'DSEG7', monospace;
-      font-size: clamp(5rem, 25vw, 16rem);
+      font-size: clamp(3.8rem, 17vw, 10.5rem);
       font-weight: 700;
       line-height: 1;
-      color: rgba(255, 255, 255, 0.75);
-      letter-spacing: 6px;
+      color: #ffffff;
+      text-shadow: var(--text-glow);
+      letter-spacing: clamp(4px, 1.4vw, 10px);
       position: absolute;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
+    }
+
+    /* Puntos de dos puntos parpadeantes */
+    .colon-blink {
+      animation: colonPulse 1s infinite steps(1, start);
+    }
+    @keyframes colonPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
     }
 
     #ampm {
-      font-family: 'DSEG14', monospace;
-      font-size: clamp(1.2rem, 5vw, 3.5rem);
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.5);
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.1rem, 3.5vw, 2.4rem);
+      font-weight: 800;
+      color: var(--accent-blue);
+      text-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
       align-self: flex-start;
-      margin-top: clamp(1rem, 4vw, 2.5rem);
+      margin-top: clamp(0.6rem, 2.2vw, 1.4rem);
       margin-left: 10px;
+      letter-spacing: 2px;
     }
 
-    #weather {
-      margin-top: 1.5rem;
-      font-family: 'DSEG14', monospace;
-      font-size: clamp(0.85rem, 3vw, 1.6rem);
+    /* Barra de Widgets y Datos de Estado (Diseño Glassmorphism Premium) */
+    .info-bar {
+      margin-top: 1.2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(0.82rem, 1.6vw, 1.05rem);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      letter-spacing: 0.3px;
+    }
+
+    .info-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 6px 16px;
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    .info-tag span.val {
+      color: #facc15;
       font-weight: 700;
-      color: rgba(255, 255, 255, 0.3);
-      letter-spacing: 3px;
-      text-align: center;
-      text-transform: uppercase;
+    }
+    .info-tag.battery-tag {
+      color: #34d399;
     }
 
-    #fs-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 8px 14px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.25);
-      border-radius: 50px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.3s;
+    /* Suelo sutil en la parte inferior */
+    .ground-line {
+      position: absolute;
+      bottom: 35px;
+      left: 0;
+      right: 0;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.35) 50%, transparent 100%);
+      z-index: 2;
+    }
+
+    /* Contenedor de Caminata: Finn, Jake y BMO */
+    .walking-world {
+      position: absolute;
+      bottom: 36px;
+      left: 0;
+      width: 100%;
+      height: 155px;
+      pointer-events: none;
       z-index: 10;
     }
-    #fs-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
-    #fs-btn.hidden { opacity: 0; pointer-events: none; }
+
+    .squad-container {
+      position: absolute;
+      bottom: 0;
+      left: 60px;
+      display: flex;
+      align-items: flex-end;
+      gap: 22px;
+      cursor: pointer;
+      pointer-events: auto;
+      will-change: left;
+    }
+
+    .char-box {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .sprite-img {
+      image-rendering: pixelated;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.75));
+      pointer-events: none;
+      display: block;
+      transform-origin: center bottom;
+      transition: transform 0.15s ease;
+    }
+
+    #duo-sprite {
+      height: clamp(88px, 14.5vh, 125px);
+    }
+
+    #bmo-sprite {
+      height: clamp(52px, 8.5vh, 75px);
+      margin-bottom: 2px;
+    }
+
+    /* Bocadillos de diálogo (100% Claros y Legibles) */
+    .speech-bubble {
+      position: absolute;
+      bottom: 108%;
+      background: #ffffff;
+      color: #0f172a;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: clamp(0.76rem, 1.6vw, 0.92rem);
+      padding: 6px 14px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(8px) scale(0.85);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+      z-index: 20;
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -6px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: #ffffff transparent transparent transparent;
+    }
+    .speech-bubble.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Barra de Herramientas Flotante Superior (Auto-Hide tras 4s de inactividad) */
+    .controls-bar {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      z-index: 30;
+      opacity: 1;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .controls-bar.fade-out {
+      opacity: 0.15;
+      transform: translateY(-4px);
+    }
+    .controls-bar:hover, .controls-bar:focus-within {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      padding: 7px 14px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
+    }
+    .action-btn:hover {
+      background: rgba(251, 191, 36, 0.25);
+      border-color: #fbbf24;
+      transform: translateY(-2px);
+    }
+    .action-btn:active {
+      transform: scale(0.95);
+    }
   </style>
 </head>
 <body>
 
-  <div>
+  <!-- Canvas de Confeti en fondo -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Banner Superior Temático -->
+  <div class="header-banner">
+    <div class="adventure-title" id="main-title" onclick="triggerPartyBurst()" title="¡Toca para celebrar!">¡HORA DE AVENTURA!</div>
+    <div class="birthday-badge" id="bday-btn" onclick="triggerPartyBurst()">
+      <span>🎂</span> <span id="bday-text">¡FELIZ CUMPLEAÑOS!</span> <span>🎉</span>
+    </div>
+  </div>
+
+  <!-- Barra de Herramientas Flotante (Esquina Superior Derecha) -->
+  <div class="controls-bar" id="controls">
+    <button class="action-btn" id="night-btn" onclick="toggleNightMode()" title="Atenuar para la noche">
+      <span id="night-icon">🌙</span> <span id="night-text">Noche</span>
+    </button>
+    <button class="action-btn" id="party-btn" onclick="triggerPartyBurst()">
+      <span>🎊</span> ¡Fiesta!
+    </button>
+    <button class="action-btn" id="fs-btn" onclick="toggleFullscreen()">
+      <span>⛶</span> Pantalla
+    </button>
+  </div>
+
+  <!-- Reloj Digital Central -->
+  <div class="center-stage" id="center-stage">
     <div id="clock-container">
       <div class="digit-wrap">
-        <!-- 88:88 muestra TODOS los segmentos posibles como fantasma -->
-        <span class="ghost">88:88</span>
-        <span class="active" id="clock">--:--</span>
+        <span class="ghost">88:88:88</span>
+        <span class="active" id="clock">--:--:--</span>
       </div>
       <span id="ampm">--</span>
     </div>
-    <div id="weather">--C  •  ------</div>
+
+    <!-- Barra de Información Clave (100% Nítida con Batería y Clima) -->
+    <div class="info-bar">
+      <div class="info-tag">
+        <span>📅</span> <span class="val" id="date-display">Viernes, 28 de Agosto</span>
+      </div>
+      <div class="info-tag">
+        <span>📍</span> <span>Cartagena · Ooo</span>
+      </div>
+      <div class="info-tag" id="weather-tag">
+        <span>🌤️</span> <span class="val" id="weather">28°C • Soleado</span>
+      </div>
+      <div class="info-tag battery-tag" id="battery-tag" style="display: none;">
+        <span id="bat-icon">🔋</span> <span class="val" id="bat-level">--%</span>
+      </div>
+    </div>
   </div>
 
-  <button id="fs-btn">⛶ Pantalla Completa</button>
+  <!-- Línea de suelo -->
+  <div class="ground-line"></div>
+
+  <!-- Escenario de Caminata: Dúo Finn & Jake con BMO -->
+  <div class="walking-world">
+    <div class="squad-container" id="squad" onclick="interactSquad(event)">
+      <!-- Finn & Jake (Dúo Oficial) -->
+      <div class="char-box" id="duo-box" onclick="interactChar('duo', event)">
+        <div class="speech-bubble" id="duo-bubble">¡Matemático! 🗡️</div>
+        <img src="img/finn_walk.gif" alt="Finn y Jake" class="sprite-img" id="duo-sprite">
+      </div>
+
+      <!-- BMO (Compañero) -->
+      <div class="char-box" id="bmo-box" onclick="interactChar('bmo', event)">
+        <div class="speech-bubble" id="bmo-bubble">¡BMO feliz! 🎮</div>
+        <img src="img/bmo_walk.gif" alt="BMO" class="sprite-img" id="bmo-sprite">
+      </div>
+    </div>
+  </div>
 
   <script>
-    const LAT = 10.3910;
-    const LON = -75.4794;
+    /* ==========================================================
+       1. RELOJ DIGITAL Y FECHA
+       ========================================================== */
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    let lastMinute = -1;
 
     function updateClock() {
       const now = new Date();
       let hours = now.getHours();
       const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
       const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12;
-      document.getElementById('clock').textContent = hours.toString().padStart(2, '0') + ':' + minutes;
+      
+      const displayHours = (hours % 12 || 12).toString().padStart(2, '0');
+      document.getElementById('clock').textContent = `${displayHours}:${minutes}:${seconds}`;
       document.getElementById('ampm').textContent = ampm;
+
+      const dayName = days[now.getDay()];
+      const dayNum = now.getDate();
+      const monthName = months[now.getMonth()];
+      document.getElementById('date-display').textContent = `${dayName}, ${dayNum} de ${monthName}`;
+
+      // En cada cambio de minuto, pequeña lluvia de confeti
+      if (lastMinute !== -1 && lastMinute !== now.getMinutes()) {
+        launchConfettiBurst(window.innerWidth / 2, window.innerHeight * 0.35, 35);
+        showRandomSpeech();
+      }
+      lastMinute = now.getMinutes();
     }
 
     setInterval(updateClock, 1000);
     updateClock();
+
+    /* ==========================================================
+       2. CLIMA REAL (API Open-Meteo)
+       ========================================================== */
+    const LAT = 10.3910;
+    const LON = -75.4794;
 
     async function fetchWeather() {
       try {
@@ -150,33 +504,422 @@
         const data = await res.json();
         const temp = Math.round(data.current_weather.temperature);
         const weatherMap = {
-          0: "CLEAR", 1: "MOSTLY CLEAR", 2: "PARTLY CLOUDY", 3: "CLOUDY",
-          45: "FOG", 48: "FOG", 51: "DRIZZLE", 53: "DRIZZLE", 55: "DRIZZLE",
-          61: "RAIN", 63: "RAIN", 65: "HEAVY RAIN",
-          80: "SHOWERS", 81: "SHOWERS", 82: "SHOWERS",
-          95: "STORM", 96: "STORM", 99: "STORM"
+          0: "Soleado", 1: "Mayormente Despejado", 2: "Parcialmente Nublado", 3: "Nublado",
+          45: "Niebla", 48: "Niebla", 51: "Llovizna", 53: "Llovizna", 55: "Llovizna",
+          61: "Lluvia", 63: "Lluvia", 65: "Lluvia Fuerte",
+          80: "Chubascos", 81: "Chubascos", 82: "Chubascos",
+          95: "Tormenta", 96: "Tormenta", 99: "Tormenta"
         };
-        const desc = weatherMap[data.current_weather.weathercode] || "VARIABLE";
-        document.getElementById('weather').textContent = temp + 'C  •  ' + desc;
+        const desc = weatherMap[data.current_weather.weathercode] || "Agradable";
+        document.getElementById('weather').textContent = `${temp}°C • ${desc}`;
       } catch (e) {
-        document.getElementById('weather').textContent = "--C";
+        document.getElementById('weather').textContent = "28°C • Cartagena";
       }
     }
-
     fetchWeather();
     setInterval(fetchWeather, 15 * 60 * 1000);
 
-    const btn = document.getElementById('fs-btn');
-    btn.addEventListener('click', () => {
+    /* ==========================================================
+       3. MONITOR DE BATERÍA (Para Tablets 24/7)
+       ========================================================== */
+    async function initBattery() {
+      if ('getBattery' in navigator) {
+        try {
+          const bat = await navigator.getBattery();
+          const tag = document.getElementById('battery-tag');
+          const lvl = document.getElementById('bat-level');
+          const icon = document.getElementById('bat-icon');
+
+          function updateBat() {
+            tag.style.display = 'flex';
+            const pct = Math.round(bat.level * 100);
+            lvl.textContent = `${pct}%`;
+            icon.textContent = bat.charging ? '⚡' : (pct > 20 ? '🔋' : '🪫');
+          }
+          updateBat();
+          bat.addEventListener('levelchange', updateBat);
+          bat.addEventListener('chargingchange', updateBat);
+        } catch (e) {}
+      }
+    }
+    initBattery();
+
+    /* ==========================================================
+       4. PROTECCIÓN ANTI BURN-IN PARA TABLETS OLED/LCD
+       ========================================================== */
+    // Mueve sutilmente el reloj 1-2px cada 10 minutos para proteger la pantalla
+    setInterval(() => {
+      const stage = document.getElementById('center-stage');
+      const offsetX = (Math.random() - 0.5) * 4;
+      const offsetY = (Math.random() - 0.5) * 4;
+      stage.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    }, 10 * 60 * 1000);
+
+    /* ==========================================================
+       5. AUTO-HIDE DE CONTROLES TRAS INACTIVIDAD
+       ========================================================== */
+    let idleTimer = null;
+    const controls = document.getElementById('controls');
+
+    function resetIdleTimer() {
+      controls.classList.remove('fade-out');
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        controls.classList.add('fade-out');
+      }, 4500);
+    }
+    window.addEventListener('pointermove', resetIdleTimer);
+    window.addEventListener('pointerdown', resetIdleTimer);
+    resetIdleTimer();
+
+    /* ==========================================================
+       6. MODO NOCHE / ATENUACIÓN DE BRILLO
+       ========================================================== */
+    let isNightMode = false;
+    function toggleNightMode() {
+      isNightMode = !isNightMode;
+      document.body.classList.toggle('night-mode', isNightMode);
+      document.getElementById('night-icon').textContent = isNightMode ? '☀️' : '🌙';
+      document.getElementById('night-text').textContent = isNightMode ? 'Día' : 'Noche';
+    }
+
+    /* ==========================================================
+       7. LLUVIA CONTINUA DE CONFETI Y EXPLOSIONES
+       ========================================================== */
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const adventureColors = [
+      '#38bdf8', '#facc15', '#f472b6', '#ef4444', 
+      '#34d399', '#c084fc', '#fbbf24', '#ffffff'
+    ];
+
+    const particles = [];
+    const maxGentle = 35;
+
+    class ConfettiPiece {
+      constructor(x, y, isBurst = false) {
+        this.x = x !== undefined ? x : Math.random() * canvas.width;
+        this.y = y !== undefined ? y : -20;
+        this.isBurst = isBurst;
+        this.color = adventureColors[Math.floor(Math.random() * adventureColors.length)];
+        this.size = Math.random() * 8 + 6;
+        this.width = this.size;
+        this.height = this.size * (Math.random() * 0.6 + 0.5);
+        this.rotation = Math.random() * 360;
+        this.rotationSpeed = (Math.random() - 0.5) * 8;
+        
+        if (isBurst) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 10 + 5;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed - 4;
+          this.gravity = 0.22;
+          this.drag = 0.96;
+          this.opacity = 1;
+          this.decay = Math.random() * 0.015 + 0.008;
+        } else {
+          this.vx = (Math.random() - 0.5) * 1.5;
+          this.vy = Math.random() * 1.5 + 1.0;
+          this.gravity = 0.02;
+          this.drag = 1;
+          this.opacity = Math.random() * 0.7 + 0.3;
+          this.decay = 0;
+        }
+      }
+
+      update() {
+        if (this.isBurst) {
+          this.vx *= this.drag;
+          this.vy *= this.drag;
+          this.vy += this.gravity;
+          this.x += this.vx;
+          this.y += this.vy;
+          this.opacity -= this.decay;
+          this.rotation += this.rotationSpeed;
+        } else {
+          this.x += this.vx + Math.sin(this.y * 0.02) * 0.5;
+          this.y += this.vy;
+          this.rotation += this.rotationSpeed;
+
+          if (this.y > canvas.height + 20) {
+            this.y = -20;
+            this.x = Math.random() * canvas.width;
+          }
+        }
+      }
+
+      draw(context) {
+        if (this.opacity <= 0) return;
+        context.save();
+        context.translate(this.x, this.y);
+        context.rotate((this.rotation * Math.PI) / 180);
+        context.globalAlpha = Math.max(0, this.opacity);
+        context.fillStyle = this.color;
+        context.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+        context.restore();
+      }
+    }
+
+    for (let i = 0; i < maxGentle; i++) {
+      particles.push(new ConfettiPiece(Math.random() * canvas.width, Math.random() * canvas.height, false));
+    }
+
+    function launchConfettiBurst(x, y, count = 50) {
+      for (let i = 0; i < count; i++) {
+        particles.push(new ConfettiPiece(x, y, true));
+      }
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw(ctx);
+        if (p.isBurst && p.opacity <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+      requestAnimationFrame(animateConfetti);
+    }
+    animateConfetti();
+
+    // Clic en pantalla para confeti
+    window.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.controls-bar') || e.target.closest('.squad-container') || e.target.closest('.header-banner')) return;
+      playSynthChime();
+      launchConfettiBurst(e.clientX, e.clientY, 35);
+    });
+
+    /* ==========================================================
+       8. CONTROL DE MOVIMIENTO (DUO FINN/JAKE + BMO)
+       ========================================================= */
+    const squad = document.getElementById('squad');
+    const duoSprite = document.getElementById('duo-sprite');
+    const bmoSprite = document.getElementById('bmo-sprite');
+
+    let posX = 60;
+    let direction = 1;
+    let speed = 1.3;
+    let isBusy = false;
+    let pauseTimer = 0;
+    let currentSquadState = '';
+
+    function gameLoop() {
+      if (!isBusy) {
+        if (pauseTimer > 0) {
+          pauseTimer--;
+        } else {
+          posX += direction * speed;
+          const maxRight = window.innerWidth - 200;
+          const minLeft = 40;
+          if (posX >= maxRight) {
+            posX = maxRight; direction = -1; pauseTimer = 85; setSquadState('idle');
+          } else if (posX <= minLeft) {
+            posX = minLeft; direction = 1; pauseTimer = 85; setSquadState('idle');
+          } else {
+            setSquadState('walk');
+          }
+        }
+      }
+      squad.style.left = `${posX}px`;
+      duoSprite.style.transform = `scaleX(${direction})`;
+      bmoSprite.style.transform = `scaleX(${direction})`;
+      requestAnimationFrame(gameLoop);
+    }
+    requestAnimationFrame(gameLoop);
+
+    function setSquadState(state) {
+      if (isBusy || currentSquadState === state) return;
+      currentSquadState = state;
+      if (state === 'walk') {
+        duoSprite.src = 'img/finn_walk.gif';
+        bmoSprite.src = 'img/bmo_walk.gif';
+      } else if (state === 'idle') {
+        duoSprite.src = 'img/finn_idle.gif';
+        bmoSprite.src = 'img/bmo_idle.gif';
+      }
+    }
+
+    /* ==========================================================
+       9. INTERACCIÓN Y DIÁLOGOS
+       ========================================================== */
+    const duoQuotes = [
+      "¡Matemático! 🗡️", 
+      "¡Qué hora es! ¡Hora de Aventura!", 
+      "¡Por las barbas de Glob!", 
+      "¡Algebraico! 🌭", 
+      "¡Saca los panqueques con tocino! ✨",
+      "¡Feliz Cumpleaños! 🎂🎉"
+    ];
+    const bmoQuotes = [
+      "¡BMO es genial! 🎮", 
+      "¡BMO es una máquina feliz! ✨", 
+      "¿Quién quiere jugar videojuegos?", 
+      "¡Yay, fiesta de cumpleaños! 🎈"
+    ];
+
+    function showBubble(bubbleId, text) {
+      const b = document.getElementById(bubbleId);
+      b.textContent = text;
+      b.classList.add('show');
+      setTimeout(() => b.classList.remove('show'), 2800);
+    }
+
+    function interactChar(char, e) {
+      if (e) e.stopPropagation();
+      playSynthChime();
+      const squadRect = squad.getBoundingClientRect();
+      launchConfettiBurst(squadRect.left + squadRect.width / 2, squadRect.top, 50);
+
+      if (char === 'duo') {
+        playSwordSound();
+        showBubble('duo-bubble', duoQuotes[Math.floor(Math.random() * duoQuotes.length)]);
+        duoSprite.src = 'img/finn_party.gif';
+        setTimeout(() => { if (!isBusy) duoSprite.src = 'img/finn_walk.gif'; }, 1600);
+      } else if (char === 'bmo') {
+        showBubble('bmo-bubble', bmoQuotes[Math.floor(Math.random() * bmoQuotes.length)]);
+        bmoSprite.src = 'img/bmo_party.gif';
+        setTimeout(() => { if (!isBusy) bmoSprite.src = 'img/bmo_walk.gif'; }, 1600);
+      }
+    }
+
+    function interactSquad(e) {
+      if (e) e.stopPropagation();
+      isBusy = true;
+      currentSquadState = 'party';
+      duoSprite.src = 'img/finn_party.gif';
+      bmoSprite.src = 'img/bmo_party.gif';
+      playSwordSound();
+      const squadRect = squad.getBoundingClientRect();
+      launchConfettiBurst(squadRect.left + squadRect.width / 2, squadRect.top, 65);
+
+      showBubble('duo-bubble', "¡HORA DE AVENTURA! 🗡️");
+      setTimeout(() => showBubble('bmo-bubble', "¡FELIZ CUMPLEAÑOS! 🎂"), 350);
+
+      setTimeout(() => {
+        isBusy = false;
+        currentSquadState = '';
+        setSquadState('walk');
+      }, 2400);
+    }
+
+    function showRandomSpeech() {
+      if (Math.random() < 0.6) {
+        showBubble('duo-bubble', duoQuotes[Math.floor(Math.random() * duoQuotes.length)]);
+      } else {
+        showBubble('bmo-bubble', bmoQuotes[Math.floor(Math.random() * bmoQuotes.length)]);
+      }
+    }
+
+    /* Celebración de Cumpleaños */
+    function triggerPartyBurst() {
+      launchConfettiBurst(window.innerWidth * 0.15, window.innerHeight * 0.3, 80);
+      launchConfettiBurst(window.innerWidth * 0.5, window.innerHeight * 0.2, 110);
+      launchConfettiBurst(window.innerWidth * 0.85, window.innerHeight * 0.3, 80);
+      
+      const bdayBtn = document.getElementById('bday-btn');
+      bdayBtn.classList.remove('party-pulse');
+      void bdayBtn.offsetWidth;
+      bdayBtn.classList.add('party-pulse');
+      setTimeout(() => bdayBtn.classList.remove('party-pulse'), 1300);
+
+      playHappyBirthdayTune();
+      interactSquad();
+    }
+
+    /* ==========================================================
+       10. AUDIO RETRO 8-BIT SINTETIZADO
+       ========================================================== */
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSynthChime() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } catch (e) {}
+    }
+
+    function playSwordSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 0.18);
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      } catch (e) {}
+    }
+
+    function playHappyBirthdayTune() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const notes = [
+          [392.00, 0.22, 0.00], [392.00, 0.22, 0.25], [440.00, 0.45, 0.50], [392.00, 0.45, 1.00], [523.25, 0.45, 1.50], [493.88, 0.80, 2.00],
+          [392.00, 0.22, 2.90], [392.00, 0.22, 3.15], [440.00, 0.45, 3.40], [392.00, 0.45, 3.90], [587.33, 0.45, 4.40], [523.25, 0.90, 4.90]
+        ];
+        notes.forEach(([freq, dur, offset]) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(freq, now + offset);
+          gain.gain.setValueAtTime(0.08, now + offset);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + offset + dur);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + offset);
+          osc.stop(now + offset + dur);
+        });
+      } catch (e) {}
+    }
+
+    /* ==========================================================
+       11. PANTALLA COMPLETA & SCREEN WAKE LOCK (TABLET 24/7)
+       ========================================================== */
+    function toggleFullscreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
       } else {
-        document.exitFullscreen();
+        document.exitFullscreen().catch(() => {});
       }
-    });
-    document.addEventListener('fullscreenchange', () => {
-      btn.classList.toggle('hidden', !!document.fullscreenElement);
-    });
+    }
 
     async function lockScreen() {
       try {
