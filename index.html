@@ -805,14 +805,131 @@
       ]
     };
 
+    /* Web Audio & HTML5 Audio Preloading Engine (0ms Latency Instant Playback) */
+    let globalAudioCtx = null;
+    function getAudioCtx() {
+      if (!globalAudioCtx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          globalAudioCtx = new AudioCtx();
+        }
+      }
+      if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+        globalAudioCtx.resume().catch(() => {});
+      }
+      return globalAudioCtx;
+    }
+
+    // Unlock audio context on any early tap/click
+    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
+      window.addEventListener(evt, () => {
+        getAudioCtx();
+      }, { once: false, passive: true });
+    });
+
+    // Helper: Convert base64 data URI to ArrayBuffer
+    function b64ToArrayBuffer(dataUri) {
+      try {
+        const base64 = dataUri.split(',')[1];
+        const binaryStr = window.atob(base64);
+        const len = binaryStr.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        return bytes.buffer;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    const preloadedAudioBuffers = {
+      finn: [],
+      jake: [],
+      bmo: []
+    };
+
+    const preloadedAudioElements = {
+      finn: [],
+      jake: [],
+      bmo: []
+    };
+
+    // Preload and pre-decode all audio clips into memory immediately
+    function preloadAllCharacterAudio() {
+      const ctx = getAudioCtx();
+      for (const char in characterAudioClips) {
+        const list = characterAudioClips[char] || [];
+        list.forEach((src, index) => {
+          // 1. Preload HTML5 Audio element
+          try {
+            const el = new Audio();
+            el.preload = 'auto';
+            el.src = src;
+            el.volume = 1.0;
+            el.load();
+            preloadedAudioElements[char].push(el);
+          } catch (e) {}
+
+          // 2. Pre-decode Web Audio PCM buffer for zero-lag instant start
+          try {
+            if (ctx) {
+              const arrayBuf = b64ToArrayBuffer(src);
+              if (arrayBuf) {
+                ctx.decodeAudioData(arrayBuf.slice(0), (decoded) => {
+                  preloadedAudioBuffers[char][index] = decoded;
+                }, () => {});
+              }
+            }
+          } catch (e) {}
+        });
+      }
+    }
+
+    // Run preloading on DOM load and window load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', preloadAllCharacterAudio);
+    } else {
+      preloadAllCharacterAudio();
+    }
+    window.addEventListener('load', preloadAllCharacterAudio);
+
     function playRealCharacterVoice(char) {
       try {
-        const list = characterAudioClips[char];
-        if (list && list.length) {
-          const src = list[Math.floor(Math.random() * list.length)];
-          const audio = new Audio(src);
-          audio.volume = 1.0;
-          audio.play().catch(() => {});
+        const ctx = getAudioCtx();
+        const buffers = preloadedAudioBuffers[char] ? preloadedAudioBuffers[char].filter(Boolean) : [];
+
+        // Method 1: Web Audio Buffer (Instantaneous 0ms latency)
+        if (ctx && buffers.length > 0) {
+          const buf = buffers[Math.floor(Math.random() * buffers.length)];
+          const source = ctx.createBufferSource();
+          source.buffer = buf;
+          source.connect(ctx.destination);
+          source.start(0);
+          return;
+        }
+
+        // Method 2: Preloaded HTML5 Audio Element Pool
+        const elements = preloadedAudioElements[char] || [];
+        if (elements.length > 0) {
+          const original = elements[Math.floor(Math.random() * elements.length)];
+          // Clone or reset to allow instant replay
+          const clone = original.cloneNode(true);
+          clone.volume = 1.0;
+          clone.play().catch(() => {
+            original.currentTime = 0;
+            original.play().catch(() => {});
+          });
+          return;
+        }
+
+        // Method 3: Fallback raw playback
+        const rawList = characterAudioClips[char];
+        if (rawList && rawList.length) {
+          const src = rawList[Math.floor(Math.random() * rawList.length)];
+          const a = new Audio(src);
+          a.volume = 1.0;
+          a.play().catch(() => {});
         }
       } catch (e) {}
     }
