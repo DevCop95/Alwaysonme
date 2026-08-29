@@ -272,19 +272,51 @@
       margin-bottom: 2px;
     }
 
+    /* Animación Global de Salto */
     .char-box.jump-anim {
       animation: charJump 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     @keyframes charJump {
-      0%, 100% {
-        transform: translateY(0) scale(1);
-      }
-      35% {
-        transform: translateY(-26px) scale(1.08);
-      }
-      70% {
-        transform: translateY(-5px) scale(0.98);
-      }
+      0%, 100% { transform: translateY(0) scale(1); }
+      35% { transform: translateY(-26px) scale(1.08); }
+      70% { transform: translateY(-5px) scale(0.98); }
+    }
+
+    /* Acción Única de Finn: Ataque Heroico con Espada */
+    .char-box.finn-action {
+      animation: finnHeroSlash 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes finnHeroSlash {
+      0% { transform: translateY(0) rotate(0deg) scale(1); filter: drop-shadow(0 8px 14px rgba(0,0,0,0.75)); }
+      25% { transform: translateY(-14px) rotate(-18deg) scale(1.06); filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.85)); }
+      50% { transform: translateY(-34px) rotate(22deg) scale(1.2); filter: drop-shadow(0 0 24px rgba(251, 191, 36, 0.95)); }
+      75% { transform: translateY(-8px) rotate(-6deg) scale(1.02); }
+      100% { transform: translateY(0) rotate(0deg) scale(1); filter: drop-shadow(0 8px 14px rgba(0,0,0,0.75)); }
+    }
+
+    /* Acción Única de Jake: Estiramiento Mágico Elástico */
+    .char-box.jake-action {
+      animation: jakeElasticStretch 0.85s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes jakeElasticStretch {
+      0% { transform: scale(1, 1) translateY(0); filter: drop-shadow(0 8px 14px rgba(0,0,0,0.75)); }
+      20% { transform: scale(1.48, 0.6) translateY(6px); filter: drop-shadow(0 0 16px rgba(250, 204, 21, 0.8)); }
+      50% { transform: scale(0.65, 1.55) translateY(-38px); filter: drop-shadow(0 0 26px rgba(251, 191, 36, 0.98)); }
+      75% { transform: scale(1.2, 0.85) translateY(-4px); }
+      90% { transform: scale(0.95, 1.05) translateY(-1px); }
+      100% { transform: scale(1, 1) translateY(0); filter: drop-shadow(0 8px 14px rgba(0,0,0,0.75)); }
+    }
+
+    /* Acción Única de BMO: Baile y Salto 8-Bit Gamer */
+    .char-box.bmo-action {
+      animation: bmoGamerBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes bmoGamerBounce {
+      0% { transform: translateY(0) rotate(0deg) scale(1); filter: drop-shadow(0 8px 14px rgba(0,0,0,0.75)); }
+      20% { transform: translateY(-16px) rotate(-18deg) scale(1.16); filter: drop-shadow(0 0 18px rgba(52, 211, 153, 0.85)); }
+      45% { transform: translateY(-30px) rotate(18deg) scale(1.24); filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.95)); }
+      70% { transform: translateY(-10px) rotate(-8deg) scale(1.08); filter: drop-shadow(0 0 18px rgba(244, 114, 182, 0.85)); }
+      100% { transform: translateY(0) rotate(0deg) scale(1); filter: drop-shadow(0 8px 14px rgba(0,0,0,0.75)); }
     }
 
     /* Bocadillos de diálogo (100% Claros y Legibles) */
@@ -665,31 +697,33 @@
     requestAnimationFrame(gameLoop);
 
     /* ==========================================================
-       9. INTERACCIÓN Y DIÁLOGOS DE PERSONAJES
+       9. INTERACCIÓN Y DIÁLOGOS DE PERSONAJES (PARA VALE / LADYBLUE)
        ========================================================== */
     const finnQuotes = [
-      "¡Matemático! 🗡️", 
-      "¡Qué hora es! ¡Hora de Aventura!", 
-      "¡Por las barbas de Glob!", 
-      "¡Algebraico! 🌭", 
-      "¡Saca los panqueques con tocino! ✨",
-      "¡Feliz Cumpleaños! 🎂🎉"
+      "¡Es hora de aventura, Vale! 🗡️", 
+      "¡Eres la más valiente de Ooo, Ladyblue! ✨", 
+      "¡Feliz Cumpleaños, Vale! ¡Matemático! 🎂", 
+      "¡A proteger el reino contigo, Ladyblue! 🛡️", 
+      "¡Por las barbas de Glob, felicidades Vale! 🎉", 
+      "¡Algebraico, Ladyblue! ¡El mejor día de todos! ⭐"
     ];
 
     const jakeQuotes = [
-      "¡Algebraico, hermano! 🌭",
-      "¡Hora de comer sándwiches mágicos! ✨",
-      "¡Estírate y celebra en grande! 🎷",
-      "¡Feliz Cumpleaños bro! 🎂🎉",
-      "¡Todo es más genial con amigos! 🎈"
+      "¡Abrazo elástico para Vale! 🌭",
+      "¡Ladyblue, hoy mandas tú en todo Ooo! 👑",
+      "¡Feliz cumple Vale! ¡Panqueques con tocino para ti! 🥞",
+      "¡Todo es más genial contigo, Ladyblue! 🎈",
+      "¡Eres mi persona favorita en el mundo, Vale! 🎷",
+      "¡Fiesta épica para Ladyblue! ¡A bailar! 🥳"
     ];
 
     const bmoQuotes = [
-      "¡BMO es genial! 🎮", 
-      "¡BMO es una máquina feliz! ✨", 
-      "¿Quién quiere jugar videojuegos?", 
-      "¡Yay, fiesta de cumpleaños! 🎈",
-      "¡BMO te desea un día increíble! 🎂"
+      "¡BMO te ama mucho, Vale! 🎮", 
+      "¡Ladyblue es la jugadora número uno de Ooo! 👾", 
+      "¡Feliz cumpleaños Vale! ¡Música para celebrar! 🎵", 
+      "¿Quién quiere jugar videojuegos con Ladyblue? 🕹️", 
+      "¡BMO está súper feliz por ti, Vale! 💚",
+      "¡Yay! ¡Felicidades en tu día, Ladyblue! 🎂"
     ];
 
     function showBubble(bubbleId, text) {
@@ -697,16 +731,51 @@
       if (!b) return;
       b.textContent = text;
       b.classList.add('show');
-      setTimeout(() => b.classList.remove('show'), 2600);
+      setTimeout(() => b.classList.remove('show'), 2800);
     }
 
-    function triggerCharJump(boxId) {
+    function triggerCharAction(boxId, actionClass) {
       const box = document.getElementById(boxId);
       if (!box) return;
-      box.classList.remove('jump-anim');
+      box.classList.remove(actionClass, 'jump-anim');
       void box.offsetWidth;
-      box.classList.add('jump-anim');
-      setTimeout(() => box.classList.remove('jump-anim'), 700);
+      box.classList.add(actionClass);
+      setTimeout(() => box.classList.remove(actionClass), 900);
+    }
+
+    /* ==========================================================
+       10. SÍNTESIS DE VOZ DE PERSONAJES (WEB SPEECH API)
+       ========================================================== */
+    function speakCharacterPhrase(char, phrase) {
+      if (!('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        // Quitar emojis para pronunciación limpia
+        const cleanText = phrase.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}]/gu, '').trim();
+        
+        const utter = new SpeechSynthesisUtterance(cleanText);
+        utter.lang = 'es-ES';
+
+        const voices = window.speechSynthesis.getVoices();
+        const spanishVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('es'));
+        if (spanishVoice) utter.voice = spanishVoice;
+
+        if (char === 'finn') {
+          // Finn: Tono enérgico, juvenil y heroico
+          utter.pitch = 1.35;
+          utter.rate = 1.12;
+        } else if (char === 'jake') {
+          // Jake: Tono relajado, amigable y más grave
+          utter.pitch = 0.82;
+          utter.rate = 0.94;
+        } else if (char === 'bmo') {
+          // BMO: Tono robótico, muy agudo y alegre
+          utter.pitch = 1.90;
+          utter.rate = 1.05;
+        }
+
+        window.speechSynthesis.speak(utter);
+      } catch (err) {}
     }
 
     function interactChar(char, e) {
@@ -714,36 +783,45 @@
       
       if (char === 'finn') {
         playSwordSound();
-        triggerCharJump('finn-box');
-        showBubble('finn-bubble', finnQuotes[Math.floor(Math.random() * finnQuotes.length)]);
+        triggerCharAction('finn-box', 'finn-action');
+        const quote = finnQuotes[Math.floor(Math.random() * finnQuotes.length)];
+        showBubble('finn-bubble', quote);
+        speakCharacterPhrase('finn', quote);
         const rect = document.getElementById('finn-box').getBoundingClientRect();
-        launchConfettiBurst(rect.left + rect.width / 2, rect.top, 45);
+        launchConfettiBurst(rect.left + rect.width / 2, rect.top, 50);
       } else if (char === 'jake') {
-        playSynthChime();
-        triggerCharJump('jake-box');
-        showBubble('jake-bubble', jakeQuotes[Math.floor(Math.random() * jakeQuotes.length)]);
+        playElasticSound();
+        triggerCharAction('jake-box', 'jake-action');
+        const quote = jakeQuotes[Math.floor(Math.random() * jakeQuotes.length)];
+        showBubble('jake-bubble', quote);
+        speakCharacterPhrase('jake', quote);
         const rect = document.getElementById('jake-box').getBoundingClientRect();
-        launchConfettiBurst(rect.left + rect.width / 2, rect.top, 45);
+        launchConfettiBurst(rect.left + rect.width / 2, rect.top, 50);
       } else if (char === 'bmo') {
-        playSynthChime();
-        triggerCharJump('bmo-box');
-        showBubble('bmo-bubble', bmoQuotes[Math.floor(Math.random() * bmoQuotes.length)]);
+        playBmoSound();
+        triggerCharAction('bmo-box', 'bmo-action');
+        const quote = bmoQuotes[Math.floor(Math.random() * bmoQuotes.length)];
+        showBubble('bmo-bubble', quote);
+        speakCharacterPhrase('bmo', quote);
         const rect = document.getElementById('bmo-box').getBoundingClientRect();
-        launchConfettiBurst(rect.left + rect.width / 2, rect.top, 45);
+        launchConfettiBurst(rect.left + rect.width / 2, rect.top, 50);
       }
     }
 
     function showRandomSpeech() {
       const r = Math.random();
       if (r < 0.35) {
-        showBubble('finn-bubble', finnQuotes[Math.floor(Math.random() * finnQuotes.length)]);
-        triggerCharJump('finn-box');
+        const quote = finnQuotes[Math.floor(Math.random() * finnQuotes.length)];
+        showBubble('finn-bubble', quote);
+        triggerCharAction('finn-box', 'finn-action');
       } else if (r < 0.7) {
-        showBubble('jake-bubble', jakeQuotes[Math.floor(Math.random() * jakeQuotes.length)]);
-        triggerCharJump('jake-box');
+        const quote = jakeQuotes[Math.floor(Math.random() * jakeQuotes.length)];
+        showBubble('jake-bubble', quote);
+        triggerCharAction('jake-box', 'jake-action');
       } else {
-        showBubble('bmo-bubble', bmoQuotes[Math.floor(Math.random() * bmoQuotes.length)]);
-        triggerCharJump('bmo-box');
+        const quote = bmoQuotes[Math.floor(Math.random() * bmoQuotes.length)];
+        showBubble('bmo-bubble', quote);
+        triggerCharAction('bmo-box', 'bmo-action');
       }
     }
 
@@ -761,18 +839,20 @@
 
       playHappyBirthdayTune();
 
-      // Salto sincronizado y diálogos alegres
-      triggerCharJump('finn-box');
-      setTimeout(() => triggerCharJump('jake-box'), 150);
-      setTimeout(() => triggerCharJump('bmo-box'), 300);
+      // Acciones sincronizadas de los tres personajes
+      triggerCharAction('finn-box', 'finn-action');
+      setTimeout(() => triggerCharAction('jake-box', 'jake-action'), 180);
+      setTimeout(() => triggerCharAction('bmo-box', 'bmo-action'), 360);
 
-      showBubble('finn-bubble', "¡HORA DE AVENTURA! 🗡️");
-      setTimeout(() => showBubble('jake-bubble', "¡FIESTA TOTAL! 🎷"), 250);
-      setTimeout(() => showBubble('bmo-bubble', "¡FELIZ CUMPLEAÑOS! 🎂"), 500);
+      showBubble('finn-bubble', "¡FELIZ CUMPLEAÑOS VALE! 🗡️");
+      setTimeout(() => showBubble('jake-bubble', "¡FIESTA TOTAL LADYBLUE! 🎷"), 250);
+      setTimeout(() => showBubble('bmo-bubble', "¡BMO TE AMA MUCHO! 🎂"), 500);
+
+      speakCharacterPhrase('bmo', "¡Feliz cumpleaños Vale! ¡Te amamos!");
     }
 
     /* ==========================================================
-       10. AUDIO RETRO 8-BIT SINTETIZADO
+       11. EFECTOS DE AUDIO SINTETIZADOS (ESPADA, ELÁSTICO, 8-BIT)
        ========================================================== */
     let audioCtx = null;
 
@@ -786,24 +866,7 @@
       return audioCtx;
     }
 
-    function playSynthChime() {
-      try {
-        const ctx = getAudioContext();
-        const now = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15);
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.3);
-      } catch (e) {}
-    }
-
+    /* Sonido de Espada Heroica de Finn */
     function playSwordSound() {
       try {
         const ctx = getAudioContext();
@@ -811,17 +874,65 @@
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(880, now);
-        osc.frequency.exponentialRampToValueAtTime(220, now + 0.18);
-        gain.gain.setValueAtTime(0.14, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.frequency.setValueAtTime(920, now);
+        osc.frequency.exponentialRampToValueAtTime(180, now + 0.22);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.18);
+        osc.stop(now + 0.22);
       } catch (e) {}
     }
 
+    /* Sonido Elástico Boing de Jake */
+    function playElasticSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.exponentialRampToValueAtTime(580, now + 0.12);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 0.24);
+        osc.frequency.exponentialRampToValueAtTime(460, now + 0.36);
+        gain.gain.setValueAtTime(0.20, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.40);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.40);
+      } catch (e) {}
+    }
+
+    /* Sonido 8-Bit Gamer / Power-Up de BMO */
+    function playBmoSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const notes = [
+          [523.25, 0.08, 0.00], // C5
+          [659.25, 0.08, 0.07], // E5
+          [783.99, 0.08, 0.14], // G5
+          [1046.50, 0.22, 0.21] // C6
+        ];
+        notes.forEach(([freq, dur, offset]) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(freq, now + offset);
+          gain.gain.setValueAtTime(0.12, now + offset);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + offset + dur);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + offset);
+          osc.stop(now + offset + dur);
+        });
+      } catch (e) {}
+    }
+
+    /* Melodía Feliz Cumpleaños Chiptune */
     function playHappyBirthdayTune() {
       try {
         const ctx = getAudioContext();
