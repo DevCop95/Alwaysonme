@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#000000">
-  <title>Reloj Digital Cartagena</title>
+  <meta name="theme-color" content="#020307">
+  <title>Reloj Digital Espacial</title>
 
   <style>
     @font-face {
@@ -23,8 +23,9 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
-      width: 100%; height: 100%;
-      background: #000000;
+      width: 100%;
+      height: 100%;
+      background: #020307;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -32,11 +33,32 @@
       align-items: center;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Lienzo espacial de fondo */
+    #space-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #clock-wrapper {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
     }
 
     #clock-container {
       position: relative;
-      z-index: 2;
       text-align: center;
       display: flex;
       align-items: flex-start;
@@ -55,65 +77,84 @@
       font-size: clamp(5rem, 25vw, 16rem);
       font-weight: 700;
       line-height: 1;
-      color: rgba(255, 255, 255, 0.07);
+      color: rgba(255, 255, 255, 0.05);
       letter-spacing: 6px;
       display: block;
     }
 
-    /* Capa 2: segmentos activos encima */
+    /* Capa 2: segmentos activos encima con halo espacial sutil */
     .active {
       font-family: 'DSEG7', monospace;
       font-size: clamp(5rem, 25vw, 16rem);
       font-weight: 700;
       line-height: 1;
-      color: rgba(255, 255, 255, 0.75);
+      color: rgba(255, 255, 255, 0.88);
       letter-spacing: 6px;
       position: absolute;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
+      text-shadow: 0 0 35px rgba(180, 215, 255, 0.2), 0 0 70px rgba(130, 175, 255, 0.08);
     }
 
     #ampm {
       font-family: 'DSEG14', monospace;
       font-size: clamp(1.2rem, 5vw, 3.5rem);
       font-weight: 700;
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.6);
       align-self: flex-start;
       margin-top: clamp(1rem, 4vw, 2.5rem);
       margin-left: 10px;
+      text-shadow: 0 0 20px rgba(180, 215, 255, 0.15);
     }
 
     #weather {
-      margin-top: 1.5rem;
+      margin-top: 1.8rem;
       font-family: 'DSEG14', monospace;
       font-size: clamp(0.85rem, 3vw, 1.6rem);
       font-weight: 700;
-      color: rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.4);
       letter-spacing: 3px;
       text-align: center;
       text-transform: uppercase;
+      text-shadow: 0 0 16px rgba(180, 215, 255, 0.12);
     }
 
     #fs-btn {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 8px 14px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.25);
+      bottom: 24px;
+      right: 24px;
+      padding: 10px 18px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.45);
       border-radius: 50px;
       cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.3s;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 10;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
-    #fs-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
-    #fs-btn.hidden { opacity: 0; pointer-events: none; }
+    #fs-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: rgba(255, 255, 255, 0.85);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+    }
+    #fs-btn.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
 
-  <div>
+  <!-- Fondo Espacial Canvas -->
+  <canvas id="space-canvas"></canvas>
+
+  <div id="clock-wrapper">
     <div id="clock-container">
       <div class="digit-wrap">
         <!-- 88:88 muestra TODOS los segmentos posibles como fantasma -->
@@ -128,6 +169,9 @@
   <button id="fs-btn">⛶ Pantalla Completa</button>
 
   <script>
+    /* ==========================================================================
+       1. RELOJ DIGITAL Y CLIMA (Lógica original de Cartagena)
+       ========================================================================== */
     const LAT = 10.3910;
     const LON = -75.4794;
 
@@ -187,6 +231,224 @@
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') lockScreen();
     });
+
+    /* ==========================================================================
+       2. MOTOR ESPACIAL: Estrellas en capas, titileo y estelas (Shooting Stars)
+       ========================================================================== */
+    const canvas = document.getElementById('space-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    let stars = [];
+    let shootingStars = [];
+    let nextShootingStarTime = Date.now() + 1200;
+    let isRendering = true;
+
+    function resizeCanvas() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      initStars();
+    }
+
+    function initStars() {
+      stars = [];
+      // Cantidad balanceada según el área visible
+      const count = Math.min(260, Math.max(120, Math.floor((width * height) / 4500)));
+
+      for (let i = 0; i < count; i++) {
+        const rand = Math.random();
+        let layer = 0;
+        let baseRadius = 0.5 + Math.random() * 0.5;
+        let baseAlpha = 0.2 + Math.random() * 0.3;
+        let twinkleSpeed = 0.012 + Math.random() * 0.02;
+
+        if (rand > 0.88) {
+          // Capa 2: Primer plano, más brillante con halo
+          layer = 2;
+          baseRadius = 1.3 + Math.random() * 0.8;
+          baseAlpha = 0.7 + Math.random() * 0.3;
+          twinkleSpeed = 0.022 + Math.random() * 0.03;
+        } else if (rand > 0.6) {
+          // Capa 1: Plano medio
+          layer = 1;
+          baseRadius = 0.8 + Math.random() * 0.6;
+          baseAlpha = 0.4 + Math.random() * 0.35;
+          twinkleSpeed = 0.015 + Math.random() * 0.025;
+        }
+
+        // Temperatura de color estelar (blancos, azules tenues y dorados suaves)
+        let color = '255, 255, 255';
+        const colorRand = Math.random();
+        if (colorRand < 0.2) {
+          color = '210, 235, 255'; // Azul diamante
+        } else if (colorRand < 0.35) {
+          color = '255, 242, 224'; // Dorado cálido
+        } else if (colorRand < 0.42) {
+          color = '190, 220, 255'; // Azul cósmico
+        }
+
+        stars.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.035 * (layer + 1),
+          vy: (Math.random() - 0.5) * 0.035 * (layer + 1),
+          baseRadius,
+          baseAlpha,
+          layer,
+          color,
+          twinklePhase: Math.random() * Math.PI * 2,
+          twinkleSpeed
+        });
+      }
+    }
+
+    function spawnShootingStar() {
+      // Ángulo inclinado natural (aprox 35° a 50°)
+      const angle = (Math.PI / 4) + (Math.random() - 0.5) * 0.3;
+      const speed = 11 + Math.random() * 8;
+      const length = 110 + Math.random() * 110;
+
+      // Origen: borde superior o izquierdo
+      let startX, startY;
+      if (Math.random() < 0.65) {
+        startX = Math.random() * width * 0.85;
+        startY = -20;
+      } else {
+        startX = -20;
+        startY = Math.random() * height * 0.65;
+      }
+
+      shootingStars.push({
+        x: startX,
+        y: startY,
+        dx: Math.cos(angle) * speed,
+        dy: Math.sin(angle) * speed,
+        length,
+        thickness: 1.2 + Math.random() * 1.3,
+        alpha: 1,
+        fadeSpeed: 0.014 + Math.random() * 0.012,
+        color: Math.random() > 0.3 ? '255, 255, 255' : '220, 240, 255'
+      });
+
+      // Próxima estrella fugaz en 2.8 a 7 segundos
+      nextShootingStarTime = Date.now() + 2800 + Math.random() * 4200;
+    }
+
+    function renderSpace() {
+      if (!isRendering) return;
+
+      // Limpiar lienzo
+      ctx.clearRect(0, 0, width, height);
+
+      // Resplandor cósmico de profundidad (sutil viñeta en el centro)
+      const grad = ctx.createRadialGradient(
+        width * 0.5, height * 0.48, 60,
+        width * 0.5, height * 0.5, Math.max(width, height) * 0.75
+      );
+      grad.addColorStop(0, 'rgba(12, 20, 38, 0.45)');
+      grad.addColorStop(0.5, 'rgba(6, 10, 22, 0.25)');
+      grad.addColorStop(1, 'rgba(2, 3, 7, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      const now = Date.now();
+
+      // Dibujar estrellas fijas y titilantes
+      for (let i = 0; i < stars.length; i++) {
+        const s = stars[i];
+        s.twinklePhase += s.twinkleSpeed;
+        const alpha = Math.max(0, s.baseAlpha * (0.65 + 0.35 * Math.sin(s.twinklePhase)));
+
+        // Deriva suave cósmica
+        s.x += s.vx;
+        s.y += s.vy;
+        if (s.x < 0) s.x = width;
+        if (s.x > width) s.x = 0;
+        if (s.y < 0) s.y = height;
+        if (s.y > height) s.y = 0;
+
+        ctx.fillStyle = `rgba(${s.color}, ${alpha.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.baseRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Halo suave en estrellas prominentes de capa frontal
+        if (s.layer === 2 && alpha > 0.55) {
+          ctx.fillStyle = `rgba(${s.color}, ${(alpha * 0.22).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.baseRadius * 2.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Generar estrellas fugaces periódicas
+      if (now > nextShootingStarTime) {
+        spawnShootingStar();
+      }
+
+      // Dibujar estelas de estrellas fugaces
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const ss = shootingStars[i];
+        ss.x += ss.dx;
+        ss.y += ss.dy;
+        ss.alpha -= ss.fadeSpeed;
+
+        if (ss.alpha <= 0 || ss.x > width + 250 || ss.y > height + 250) {
+          shootingStars.splice(i, 1);
+          continue;
+        }
+
+        // Longitud vectorial normalizada
+        const hyp = Math.hypot(ss.dx, ss.dy);
+        const tailX = ss.x - (ss.dx / hyp) * ss.length;
+        const tailY = ss.y - (ss.dy / hyp) * ss.length;
+
+        // Estela con gradiente luminoso
+        const trailGrad = ctx.createLinearGradient(tailX, tailY, ss.x, ss.y);
+        trailGrad.addColorStop(0, `rgba(${ss.color}, 0)`);
+        trailGrad.addColorStop(0.7, `rgba(${ss.color}, ${(ss.alpha * 0.5).toFixed(3)})`);
+        trailGrad.addColorStop(1, `rgba(${ss.color}, ${ss.alpha.toFixed(3)})`);
+
+        ctx.strokeStyle = trailGrad;
+        ctx.lineWidth = ss.thickness;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(tailX, tailY);
+        ctx.lineTo(ss.x, ss.y);
+        ctx.stroke();
+
+        // Cabeza luminosa
+        ctx.fillStyle = `rgba(255, 255, 255, ${ss.alpha.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(ss.x, ss.y, ss.thickness * 1.15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(renderSpace);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', resizeCanvas);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        isRendering = false;
+      } else {
+        isRendering = true;
+        requestAnimationFrame(renderSpace);
+      }
+    });
+
+    resizeCanvas();
+    renderSpace();
   </script>
 </body>
 </html>
